@@ -19,7 +19,7 @@ gem 'puma', '~> 4.1'
 gem 'jquery-rails'
 gem "shopify_api"
 
-
+ gem 'roo', '~> 2.8'
 
 # Use Active Storage variant
 # gem 'image_processing', '~> 1.2'
