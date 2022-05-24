@@ -12,18 +12,16 @@ namespace :update do
     data.each_with_index do |row, idx|
       next if idx == 0 # skip header
       user_data = Hash[[headers, row].transpose]
-      if user_data["Product Name"]==nil
+     if user_data["Product Name"]==nil
         break
       end
       ############################################################## Update Normal Field Of Watch
       url = URI("https://afc7bf55fcb3c9b22271d9b856cfb7c3:94eac404e1b0b14313534f7b9979ef92@protonshub.myshopify.com/admin/api/2022-01/products/#{user_data["product_id"]}.json")
       https = Net::HTTP.new(url.host, url.port)
       https.use_ssl = true
-
       request = Net::HTTP::Put.new(url)
       request["Content-Type"] = "application/json"
       request["x-shopify-access-token"]="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"
-
       request.body = JSON.dump({
         "product": {
           "title": "#{user_data["Product Name"]}",          
@@ -33,30 +31,26 @@ namespace :update do
           "variants": [{
             "price": "#{user_data["Price"]}",
             "sku": "#{user_data["Reference-Number"]}",
-            "inventory_quantity": "#{user_data["Quantity"]}",
-            "tracked": true
+            "inventory_quantity": "#{user_data["Quantity"]}"
           }]
         }
       })
       response = https.request(request)
       puts response.read_body
-      debugger
-      
       header_counter=0
       ############################################################## Update Metafields Of Watch
       headers.each do |header|
-        if header_counter==27
+        if header_counter==28   #### We stoped it after 28 column because after that all are product and meta id's 
           break
         end
-        puts header_counter
-        url_meta = URI("https://afc7bf55fcb3c9b22271d9b856cfb7c3:94eac404e1b0b14313534f7b9979ef92@protonshub.myshopify.com/admin/api/2022-01/products/#{user_data["product_id"]}/metafields/#{user_data["metafield_#{header}_id"]}.json")
+        header1=header.strip.gsub(" ","_")
+        header1=header1.strip.gsub("-","_")
+        url_meta = URI("https://afc7bf55fcb3c9b22271d9b856cfb7c3:94eac404e1b0b14313534f7b9979ef92@protonshub.myshopify.com/admin/api/2022-01/products/#{user_data["product_id"]}/metafields/#{user_data["metafield_#{header1}_id"]}.json")
         https1 = Net::HTTP.new(url_meta.host, url_meta.port)
         https1.use_ssl = true
         request1 = Net::HTTP::Put.new(url_meta)
         request1["Content-Type"] = "application/json"
         request1["x-shopify-access-token"]="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"
-        header1=header.strip.gsub(" ","_")
-        header1=header1.strip.gsub("-","_")
         request1.body = JSON.dump({
           "metafield": {
             "namespace": "watches",
@@ -69,12 +63,12 @@ namespace :update do
         puts response.read_body
         header_counter+=1
       end
-    debugger
+    
     end
   end
 ########################################################################################################
   desc "Update Jewelleries"   ###############################################  Update Jewelleries
-  task watch: :environment do
+  task jewellery: :environment do
     data = Roo::Spreadsheet.open('lib/jewellery.xlsx') # open spreadsheet
     headers = data.row(1) # get header row'
     data.each_with_index do |row, idx|
@@ -87,10 +81,9 @@ namespace :update do
       url = URI("https://afc7bf55fcb3c9b22271d9b856cfb7c3:94eac404e1b0b14313534f7b9979ef92@protonshub.myshopify.com/admin/api/2022-01/products/#{user_data["product_id"]}.json")
       https = Net::HTTP.new(url.host, url.port)
       https.use_ssl = true
-
       request = Net::HTTP::Put.new(url)
       request["Content-Type"] = "application/json"
-
+      request["x-shopify-access-token"]="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"
       request.body = JSON.dump({
         "product": {
           "title": "#{user_data["Product Name"]}",          
@@ -99,9 +92,15 @@ namespace :update do
           "product_type": "jewelleries",
           "variants": [
             {
+              "price": "#{user_data["Price"]}",
+              "sku": "#{user_data["Reference-Number"]}",
+              "inventory_quantity": "#{user_data["Quantity"]}",
               "option1": "#{user_data["Metal"]}"
             },
             {
+              "price": "#{user_data["Price"]}",
+              "sku": "#{user_data["Reference-Number"]}",
+              "inventory_quantity": "#{user_data["Quantity"]}",
               "option1": "#{user_data["Also Available In"]}"
             }
           ],
@@ -118,16 +117,20 @@ namespace :update do
       })
       response = https.request(request)
       puts response.read_body
+      header_counter=0
       ############################################################## Update Metafields Of Jewellery
       headers.each do |header|
-        url_meta = URI("https://afc7bf55fcb3c9b22271d9b856cfb7c3:94eac404e1b0b14313534f7b9979ef92@protonshub.myshopify.com/admin/api/2022-01/products/#{product_id}/metafields/#{user_data["metafield_#{header}_id"]}.json")
+        if header_counter==24 #### We stoped it after 24 column because after that all are product and meta id's
+          break
+        end
+        header1=header.strip.gsub(" ","_")
+        header1=header1.strip.gsub("-","_")
+        url_meta = URI("https://afc7bf55fcb3c9b22271d9b856cfb7c3:94eac404e1b0b14313534f7b9979ef92@protonshub.myshopify.com/admin/api/2022-01/products/#{user_data["product_id"]}/metafields/#{user_data["metafield_#{header1}_id"]}.json")
         https1 = Net::HTTP.new(url_meta.host, url_meta.port)
         https1.use_ssl = true
         request1 = Net::HTTP::Put.new(url_meta)
         request1["Content-Type"] = "application/json"
         request1["x-shopify-access-token"]="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"
-        header1=header.strip.gsub(" ","_")
-        header1=header.strip.gsub("-","_")
         request1.body = JSON.dump({
           "metafield": {
             "namespace": "jewelleries",
@@ -138,6 +141,7 @@ namespace :update do
         })
         response = https1.request(request1)
         puts response.read_body
+        header_counter+=1
       end
     end
   end

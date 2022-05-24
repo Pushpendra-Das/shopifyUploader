@@ -38,7 +38,6 @@ namespace :upload do
             {
               "price": "#{user_data["Price"]}",
               "sku": "#{user_data["Reference Number"]}",
-              "tracked": true,
               "inventory_quantity": "#{user_data["Quantity"]}"
             }]
         }
@@ -46,15 +45,19 @@ namespace :upload do
       response = https.request(request)
       puts response.read_body
       product_id=JSON.parse(response.read_body)["product"]["id"]
-      ################################################# Save product_id in watch.xlsx
+      inventory_item_id=JSON.parse(response.read_body)["product"]["variants"][0]["inventory_item_id"]
+      ################################################# Save product_id and inventory in watch.xlsx
       workbook,worksheet="",""
       workbook=RubyXL::Parser.parse("lib/watch.xlsx")
       worksheet=workbook[0]
       # headers=worksheet[0]
       # row_count=worksheet.sheet_data.rows.size
       header_count=28
+      
       worksheet.insert_cell(0,header_count,"product_id")
       worksheet.insert_cell(idx,header_count,"#{product_id}")
+      worksheet.insert_cell(0,header_count+1,"inventory_item_id")
+      worksheet.insert_cell(idx,header_count+1,"#{inventory_item_id}")
       workbook.write("lib/watch.xlsx")
       ################################################# Metafield Data Of Watch to Upload
       #url = URI("https://{{api_key}}:{{api_password}}@{{store_name}}.myshopify.com/admin/api/{{api_version}}/products/{{product_id}}/metafields.json")
@@ -64,17 +67,17 @@ namespace :upload do
       request1 = Net::HTTP::Post.new(url_meta)
       request1["Content-Type"] = "application/json"
       request1["x-shopify-access-token"]="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"
-      counter1=0
-      headers.each do |row1|
-        if row1.is_a? String
-          header1=row1.strip.gsub(" ","_")
+      counter1=1
+      headers.each do |header|
+        if header.is_a? String
+          header1=header.strip.gsub(" ","_")
           header1=header1.strip.gsub("-","_")
         end
         request1.body = JSON.dump({
           "metafield": {
             "namespace": "watches",
             "key": "#{header1}",
-            "value": "#{user_data[header1].blank? ? "0" : user_data[header1]}",
+            "value": "#{user_data[header].blank? ? "0" : user_data[header]}",
             "type": "single_line_text_field"
           }
         })
@@ -120,14 +123,14 @@ namespace :upload do
             {
               "price": "#{user_data["Price"]}",
               "sku": "#{user_data["Reference Number"]}",
-              "tracked": true,
+              # "tracked": true,
               "inventory_quantity": "#{user_data["Quantity"]}", 
               "option1": "#{user_data["Metal"]}"
             },
             {
               "price": "#{user_data["Price"]}",
               "sku": "#{user_data["Reference Number"]}",
-              "tracked": true,
+              # "tracked": true,
               "inventory_quantity": "#{user_data["Quantity"]}",
               "option1": "#{user_data["Also Available In"]}"
             }
@@ -147,6 +150,7 @@ namespace :upload do
       response = https.request(request)
       puts response.read_body
       product_id=JSON.parse(response.read_body)["product"]["id"]
+      inventory_item_id=JSON.parse(response.read_body)["product"]["variants"][0]["inventory_item_id"]
       ################################################# Save product_id in jewellery.xlsx
       workbook,worksheet="",""
       workbook=RubyXL::Parser.parse("lib/jewellery.xlsx")
@@ -156,6 +160,8 @@ namespace :upload do
       header_count=24 #column_count=header.count
       worksheet.insert_cell(0,header_count,"product_id")
       worksheet.insert_cell(idx,header_count,"#{product_id}")
+      worksheet.insert_cell(0,header_count+1,"inventory_item_id")
+      worksheet.insert_cell(idx,header_count+1,"#{inventory_item_id}")
       workbook.write("lib/jewellery.xlsx")
       ################################################# Metafield Data Of Jewellery to Upload
       #url = URI("https://{{api_key}}:{{api_password}}@{{store_name}}.myshopify.com/admin/api/{{api_version}}/products/{{product_id}}/metafields.json")
@@ -165,17 +171,17 @@ namespace :upload do
       request1 = Net::HTTP::Post.new(url_meta)
       request1["Content-Type"] = "application/json"
       request1["x-shopify-access-token"]="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"
-      counter1=0
-      headers.each do |row1|
-        if row1.is_a? String
-          header1=row1.strip.gsub(" ","_")
+      counter1=1
+      headers.each do |header|
+        if header.is_a? String
+          header1=header.strip.gsub(" ","_")
           header1=header1.strip.gsub("-","_")
         end
         request1.body = JSON.dump({
           "metafield": {
             "namespace": "jewelleries",
             "key": "#{header1}",
-            "value": "#{user_data[header1].blank? ? "0" : user_data[header1]}",
+            "value": "#{user_data[header].blank? ? "0" : user_data[header]}",
             "type": "single_line_text_field"
           }
         })
